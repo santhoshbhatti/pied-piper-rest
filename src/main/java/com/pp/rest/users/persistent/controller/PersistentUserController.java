@@ -1,10 +1,11 @@
-package com.pp.rest.users.controllers;
+package com.pp.rest.users.persistent.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,21 +22,21 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.pp.rest.users.exceptions.UserNotFoundException;
-import com.pp.rest.users.repo.UsersDao;
+import com.pp.rest.users.persistent.daos.UsersRepository;
 import com.pp.rest.users.vos.User;
 
 @RestController
-public class UserController {
+public class PersistentUserController {
 	@Autowired
-	UsersDao userDao;
+	UsersRepository userRepository;
 	
-	@GetMapping("/users/{id}")
+	@GetMapping("/app/users/{id}")
 	public EntityModel<User> getUser(@PathVariable("id")int id) {
-		User user = userDao.getUser(id);
-		if(user == null) {
+		Optional<User> user = userRepository.findById(id);
+		if(user.isEmpty()) {
 			throw new UserNotFoundException("id-"+id);
 		}
-		EntityModel<User> resource=EntityModel.of(user);
+		EntityModel<User> resource=EntityModel.of(user.get());
 		WebMvcLinkBuilder link = linkTo(methodOn(this.getClass()).getUsers());
 		resource.add(link.withRel("all-users"));		
 		return resource;
@@ -42,13 +44,13 @@ public class UserController {
 	
 	
 
-	@GetMapping("/users")
+	@GetMapping("/app/users")
 	public List<User> getUsers() {
-		return userDao.getAllUsers();
+		return userRepository.findAll();
 	}
-	@PostMapping("/users")
+	@PostMapping("/app/users")
 	public ResponseEntity<Object> saveUser(@Valid @RequestBody User user) {
-		User savedUser=userDao.saveUser(user);
+		User savedUser=userRepository.save(user);
 		URI uri=ServletUriComponentsBuilder
 				.fromCurrentRequest()
 				.path("/{id}")
@@ -57,4 +59,10 @@ public class UserController {
 		return ResponseEntity.created(uri).build();
 		
 	}
+	
+	@DeleteMapping("/app/users/{id}")
+	public void deleteUser(@PathVariable("id") int id) {
+		userRepository.deleteById(id);
+	}
+
 }

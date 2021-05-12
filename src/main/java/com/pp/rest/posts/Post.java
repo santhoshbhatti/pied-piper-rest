@@ -1,33 +1,53 @@
 package com.pp.rest.posts;
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.pp.rest.users.vos.User;
+@Entity
 public class Post {
+	@Id
+	@GeneratedValue
 	private Integer id;
-	private String post;
-	private Integer userid;
+	private String description;
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.LAZY)
+	private User user;
+	public Post(Integer id, String description, User user) {
+		super();
+		this.id = id;
+		this.description = description;
+		this.user = user;
+	}
+	public Post() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 	public Integer getId() {
 		return id;
 	}
 	public void setId(Integer id) {
 		this.id = id;
 	}
-	public String getPost() {
-		return post;
+	public String getDescription() {
+		return description;
 	}
-	public void setPost(String post) {
-		this.post = post;
+	public void setDescription(String description) {
+		this.description = description;
 	}
-	public Integer getUserid() {
-		return userid;
+	public User getUser() {
+		return user;
 	}
-	public void setUserid(Integer userid) {
-		this.userid = userid;
+	public void setUser(User user) {
+		this.user = user;
 	}
-	public Post(Integer id, String post, Integer userid) {
-		super();
-		this.id = id;
-		this.post = post;
-		this.userid = userid;
+	@Override
+	public String toString() {
+		return "Post [id=" + id + ", description=" + description + "]";
 	}
-	
 	
 }
